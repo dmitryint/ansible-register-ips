@@ -1,0 +1,18 @@
+- name: Identification of public IP addresses
+  ipify_facts:
+  tags: detect_public_ip
+- set_fact:
+    public_ip_address: "{{ ipify_public_ip }}"
+    tags: detect_public_ip
+- name: Find network interfaces (eth|em)
+  command: echo "{{ hostvars[inventory_hostname]['ansible_'~item]['ipv4'].address }}"
+  when: "{{ hostvars[inventory_hostname]['ansible_'~item]['ipv4'] is defined }}"
+  with_items:
+    - "{{ ansible_interfaces | map('replace', '-','_') | list | filter_ints('eth|em')  }}"
+  register: private_ip_output
+  tags: detect_private_ip
+- name: Identification of private IP addresses
+  set_fact:
+    private_ip_address: "{{ private_ip_output.results | map(attribute='stdout') | ipaddr('private') | first}}"
+  when: "{{ private_ip_output.results | map(attribute='stdout') | ipaddr('private') | length > 0}}"
+  tags: detect_private_ip
