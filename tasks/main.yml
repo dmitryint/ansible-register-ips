@@ -14,5 +14,5 @@
 - name: Identification of private IP addresses
   set_fact:
     private_ip_address: "{{ private_ip_output.results | map(attribute='stdout') | ipaddr('private') | first}}"
-  when: "{{ private_ip_output.results | map(attribute='stdout') | ipaddr('private') | length > 0}}"
+  when: "{{ (private_ip_output.stdout is defined) and (private_ip_output.results | map(attribute='stdout') | ipaddr('private') | length > 0) }}"
   tags: detect_private_ip
